@@ -9,15 +9,37 @@ In `User_Setup.h` of the TFT_eSPI library, uncomment the following line to enabl
 #define TFT_RST   4  // Reset pin (could connect to RST pin)
 ```
 
-If the display flickers during operation, you may need to adjust the SPI frequency settings in the same `User_Setup.h` file. Look for the following lines and modify them as needed:
+If you notice display flickering, try adjusting the SPI frequency in `User_Setup.h`. Locate the following line:
 
 ```c
-#define SPI_FREQUENCY  27000000 
+#define SPI_FREQUENCY  27000000
 ```
-The value `1000000 (1 MHz)` corresponds to `1` second in real time. Larger values will make display updates faster, but may increase flickering or result in output mistakes (font rendering issues).
 
-I prefer a smaller value like `500000 (500 kHz)` (display updates every 2 seconds) for a calmer display.
+Lower values (e.g., `500000` for 500 kHz) slow down updates but can reduce flicker and improve stability. Higher values speed up display refresh but may cause rendering issues.
 
-Web portal provides WiFi and timezone configuration options for an automatic time update from the internet. It also provides a manual time and date setting option. 
+For a smoother experience, a frequency like `500000` (updates every 2 seconds) is recommended.
 
-In order to use the web portal, users need to connect to the clock's WiFi access point (AP) first. The AP name is `MultifunctionClock` and the password is `12345678`. After connecting to the AP, users can access the web portal by navigating to `http://192.168.4.1`.
+### Web Portal Setup
+
+The clock features a web portal for WiFi and timezone configuration, as well as manual time and date settings.
+
+To access the portal:
+
+1. Connect to the clock's WiFi AP:
+    - **SSID:** `MultifunctionClock`
+    - **Password:** `12345678`
+2. Open a browser and go to: [http://192.168.4.1](http://192.168.4.1)
+
+### TFT Wiring Table
+
+| TFT Pin      | ESP32 Pin | Description               |
+|--------------|-----------|---------------------------|
+| VCC          | 3.3V      | Power supply              |
+| GND          | GND       | Ground                    |
+| CS           | 15        | Chip select               |
+| RESET        | 4         | Reset                     |
+| DC           | 2         | Data/Command              |
+| SDI (MOSI)   | 23        | Master Out Slave In       |
+| SCK          | 18        | Serial Clock              |
+| LED          | 3.3V (or 5V) | Backlight              |
+| SDO (MISO)   | 19        | Master In Slave Out       |
