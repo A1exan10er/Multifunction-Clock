@@ -19,6 +19,11 @@ unsigned long lastUpdate = 0;
 int hours = 12, minutes = 0, seconds = 0;
 int year = 2025, month = 9, day = 13;  // Default date
 
+// Previous values for change detection
+int prevHours = -1, prevMinutes = -1, prevSeconds = -1;
+int prevYear = -1, prevMonth = -1, prevDay = -1;
+bool firstUpdate = true;
+
 // Access Point credentials
 const char* ap_ssid = "MultifunctionClock";
 const char* ap_password = "12345678";
@@ -85,18 +90,40 @@ void loop() {
 // put function definitions here:
 
 void updateClocks() {
-  tft.fillScreen(TFT_BLACK);
-  drawDate(year, month, day);
-  drawDigitalClock(hours, minutes, seconds);
-  drawAnalogClock(hours, minutes, seconds);
+  // Only clear screen on first update
+  if (firstUpdate) {
+    tft.fillScreen(TFT_BLACK);
+    // Show Access Point IP address at the bottom (static, only draw once)
+    tft.setTextColor(TFT_YELLOW, TFT_BLACK);
+    tft.drawString("AP: " + WiFi.softAPIP().toString(), 120, 300, 2);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    firstUpdate = false;
+  }
   
-  // Show Access Point IP address at the bottom
-  tft.setTextColor(TFT_YELLOW, TFT_BLACK);
-  tft.drawString("AP: " + WiFi.softAPIP().toString(), 120, 300, 2);
-  tft.setTextColor(TFT_WHITE, TFT_BLACK); // Reset color
+  // Only update date if it changed
+  if (year != prevYear || month != prevMonth || day != prevDay) {
+    drawDate(year, month, day);
+    prevYear = year;
+    prevMonth = month;
+    prevDay = day;
+  }
+  
+  // Only update digital clock if time changed
+  if (hours != prevHours || minutes != prevMinutes || seconds != prevSeconds) {
+    drawDigitalClock(hours, minutes, seconds);
+    prevHours = hours;
+    prevMinutes = minutes;
+    prevSeconds = prevSeconds;
+  }
+  
+  // Always update analog clock for smooth second hand movement
+  drawAnalogClock(hours, minutes, seconds);
 }
 
 void drawDate(int y, int mo, int d) {
+  // Clear the date area
+  tft.fillRect(30, 5, 180, 30, TFT_BLACK);
+  
   char dateBuf[12];
   sprintf(dateBuf, "%04d-%02d-%02d", y, mo, d);
   tft.setTextColor(TFT_CYAN, TFT_BLACK);
@@ -105,14 +132,23 @@ void drawDate(int y, int mo, int d) {
 }
 
 void drawDigitalClock(int h, int m, int s) {
+  // Clear the digital clock area
+  tft.fillRect(10, 35, 220, 50, TFT_BLACK);
+  
   char buf[9]; 
   sprintf(buf, "%02d:%02d:%02d", h, m, s);
   tft.setTextSize(1);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.drawString(buf, 120, 50, 7); // Move time down slightly
 }
 
 void drawAnalogClock(int h, int m, int s) {
   int cx = 120, cy = 170, r = 55;  // Move down and make slightly smaller
+  
+  // Clear the analog clock area
+  tft.fillCircle(cx, cy, r + 2, TFT_BLACK);
+  
+  // Draw clock face
   tft.drawCircle(cx, cy, r, TFT_WHITE);
   // Draw hour marks
   for (int i = 0; i < 12; i++) {
